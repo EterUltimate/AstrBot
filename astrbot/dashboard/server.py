@@ -40,6 +40,7 @@ from .routes.route import Response, RouteContext
 from .routes.session_management import SessionManagementRoute
 from .routes.subagent import SubAgentRoute
 from .routes.t2i import T2iRoute
+from .upload_limits import resolve_dashboard_max_content_length_mb
 
 
 class _AddrWithPort(Protocol):
@@ -134,9 +135,15 @@ class AstrBotDashboard:
 
         self.app = Quart("dashboard", static_folder=self.data_path, static_url_path="/")
         APP = self.app  # noqa
-        self.app.config["MAX_CONTENT_LENGTH"] = (
-            128 * 1024 * 1024
-        )  # 将 Flask 允许的最大上传文件体大小设置为 128 MB
+        dashboard_config = self.config.get("dashboard", {})
+        max_content_length_mb = resolve_dashboard_max_content_length_mb(
+            dashboard_config,
+        )
+        self.app.config["MAX_CONTENT_LENGTH"] = max_content_length_mb * 1024 * 1024
+        logger.info(
+            "Dashboard multipart upload limit set to %s MB",
+            max_content_length_mb,
+        )
         self.app.json = AstrBotJSONProvider(self.app)
         self.app.json.sort_keys = False
         self.app.before_request(self.auth_middleware)

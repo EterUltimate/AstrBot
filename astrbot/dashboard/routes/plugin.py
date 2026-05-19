@@ -20,6 +20,7 @@ import jwt
 from aiofiles import ospath as aio_ospath
 from quart import Response as QuartResponse
 from quart import g, make_response, request
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from astrbot.api import sp
 from astrbot.core import DEMO_MODE, file_token_service, logger
@@ -41,6 +42,10 @@ from astrbot.core.utils.astrbot_path import (
     get_astrbot_temp_path,
 )
 
+from ..upload_limits import (
+    format_plugin_upload_too_large_message,
+    resolve_dashboard_max_content_length_mb,
+)
 from .route import Response, Route, RouteContext
 
 PLUGIN_UPDATE_CONCURRENCY = (
@@ -1693,6 +1698,9 @@ class PluginRoute(Route):
                 .__dict__
             )
 
+        max_content_length_mb = resolve_dashboard_max_content_length_mb(
+            self.config.get("dashboard", {}),
+        )
         try:
             file = await request.files
             file = file["file"]
@@ -1714,6 +1722,14 @@ class PluginRoute(Route):
             await self._sync_skills_after_plugin_change()
             logger.info(f"安装插件 {file.filename} 成功")
             return Response().ok(plugin_info, "安装成功。").__dict__
+        except RequestEntityTooLarge:
+            logger.warning(
+                "插件上传超过限制，当前最大值 %s MB",
+                max_content_length_mb,
+            )
+            return Response().error(
+                format_plugin_upload_too_large_message(max_content_length_mb),
+            ).__dict__
         except PluginVersionIncompatibleError as e:
             return {
                 "status": "warning",

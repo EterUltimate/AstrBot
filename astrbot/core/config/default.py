@@ -252,6 +252,7 @@ DEFAULT_CONFIG = {
         "host": "0.0.0.0",
         "port": 6185,
         "disable_access_log": True,
+        "max_content_length_mb": 512,
         "ssl": {
             "enable": False,
             "cert_file": "",
@@ -2972,6 +2973,7 @@ CONFIG_METADATA_2 = {
                 "type": "string",
                 "condition": {"dashboard.ssl.enable": True},
             },
+            "dashboard.max_content_length_mb": {"type": "int"},
             "log_file_enable": {"type": "bool"},
             "log_file_path": {"type": "string", "condition": {"log_file_enable": True}},
             "log_file_max_mb": {"type": "int", "condition": {"log_file_enable": True}},
@@ -4219,6 +4221,11 @@ CONFIG_METADATA_3_SYSTEM = {
                         "type": "string",
                         "hint": "可选。用于指定 CA 证书文件路径。",
                         "condition": {"dashboard.ssl.enable": True},
+                    },
+                    "dashboard.max_content_length_mb": {
+                        "description": "WebUI 上传文件大小上限 (MB)",
+                        "type": "int",
+                        "hint": "用于插件上传等 multipart 请求。默认 512MB。",
                     },
                     "log_file_enable": {
                         "description": "启用文件日志",

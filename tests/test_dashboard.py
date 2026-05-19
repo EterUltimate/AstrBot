@@ -16,6 +16,7 @@ import pytest
 import pytest_asyncio
 from quart import Quart, jsonify
 from werkzeug.datastructures import FileStorage
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from astrbot.core import LogBroker
 from astrbot.core.core_lifecycle import AstrBotCoreLifecycle
@@ -1203,6 +1204,49 @@ async def test_dashboard_ssl_missing_cert_and_key_falls_back_to_http(
             for message in warning_messages
         )
         assert any("Starting WebUI at http://" in message for message in info_messages)
+    finally:
+        core_lifecycle_td.astrbot_config["dashboard"] = original_dashboard_config
+
+
+@pytest.mark.asyncio
+async def test_plugin_upload_limit_is_configurable_and_reports_too_large(
+    core_lifecycle_td: AstrBotCoreLifecycle,
+    monkeypatch,
+):
+    original_dashboard_config = copy.deepcopy(
+        core_lifecycle_td.astrbot_config.get("dashboard", {}),
+    )
+
+    class _TooLargeRequest:
+        @property
+        def files(self):
+            async def _raise():
+                raise RequestEntityTooLarge()
+
+            return _raise()
+
+        @property
+        def form(self):
+            async def _form():
+                return {"ignore_version_check": "false"}
+
+            return _form()
+
+    try:
+        core_lifecycle_td.astrbot_config["dashboard"]["max_content_length_mb"] = 1
+        server = AstrBotDashboard(
+            core_lifecycle_td,
+            core_lifecycle_td.db,
+            asyncio.Event(),
+        )
+        assert server.app.config["MAX_CONTENT_LENGTH"] == 1024 * 1024
+
+        monkeypatch.setattr("astrbot.dashboard.routes.plugin.request", _TooLargeRequest())
+        response = await server.pr.install_plugin_upload()
+
+        assert response["status"] == "error"
+        assert "1 MB" in response["message"]
+        assert "dashboard.max_content_length_mb" in response["message"]
     finally:
         core_lifecycle_td.astrbot_config["dashboard"] = original_dashboard_config
 
