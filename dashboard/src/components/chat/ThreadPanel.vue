@@ -60,6 +60,7 @@ import { nextTick, ref, watch } from "vue";
 import ChatMessageList from "@/components/chat/ChatMessageList.vue";
 import type { ChatRecord, ChatThread, MessagePart } from "@/composables/useMessages";
 import { useModuleI18n } from "@/i18n/composables";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -144,7 +145,7 @@ async function send() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        Authorization: `Bearer ${safeLocalStorage.getItem("token") || ""}`,
       },
       body: JSON.stringify({
         thread_id: props.thread.thread_id,

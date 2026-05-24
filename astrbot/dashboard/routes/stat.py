@@ -36,7 +36,14 @@ from astrbot.dashboard.password_state import (
 )
 
 from .restart_control import should_skip_restart_after_runtime_log_config_save
-from .route import Response, Route, RouteContext
+from .route import (
+    Response,
+    Route,
+    RouteContext,
+    build_runtime_status_data,
+    is_runtime_request_ready,
+    runtime_status_response,
+)
 
 
 class StatRoute(Route):
@@ -51,6 +58,7 @@ class StatRoute(Route):
             "/stat/get": ("GET", self.get_stat),
             "/stat/provider-tokens": ("GET", self.get_provider_token_stats),
             "/stat/version": ("GET", self.get_version),
+            "/stat/runtime-status": ("GET", self.get_runtime_status),
             "/stat/start-time": ("GET", self.get_start_time),
             "/stat/restart-core": ("POST", self.restart_core),
             "/stat/test-ghproxy-connection": ("POST", self.test_ghproxy_connection),
@@ -64,6 +72,13 @@ class StatRoute(Route):
         self.register_routes()
         self.core_lifecycle = core_lifecycle
         self.storage_cleaner = StorageCleaner(self.config)
+
+    async def get_runtime_status(self):
+        if is_runtime_request_ready(self.core_lifecycle):
+            return (
+                Response().ok(build_runtime_status_data(self.core_lifecycle)).__dict__
+            )
+        return runtime_status_response(self.core_lifecycle)
 
     async def restart_core(self):
         if DEMO_MODE:

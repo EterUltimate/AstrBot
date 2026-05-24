@@ -211,6 +211,7 @@ import type { Session } from "@/composables/useSessions";
 import { useModuleI18n } from "@/i18n/composables";
 import { useCustomizerStore } from "@/stores/customizer";
 import { buildWebchatUmoDetails } from "@/utils/chatConfigBinding";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const props = withDefaults(
   defineProps<{
@@ -290,7 +291,7 @@ const {
 });
 
 const transportMode = computed<TransportMode>(() =>
-  (localStorage.getItem("chat.transportMode") as TransportMode) === "websocket" ? "websocket" : "sse",
+  (safeLocalStorage.getItem("chat.transportMode") as TransportMode) === "websocket" ? "websocket" : "sse",
 );
 
 onMounted(async () => {

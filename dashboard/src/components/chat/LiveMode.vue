@@ -101,6 +101,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { useVADRecording } from "@/composables/useVADRecording";
 import { useCustomizerStore } from "@/stores/customizer";
 import { resolveWebSocketUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import SiriOrb from "./LiveOrb.vue";
 
 const emit = defineEmits<{
@@ -322,7 +323,7 @@ async function stopLiveMode() {
 function connectWebSocket(): Promise<void> {
   return new Promise((resolve, reject) => {
     // 获取存储的 token
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     if (!token) {
       reject(new Error("未登录，请先登录"));
       return;

@@ -7,6 +7,7 @@ import { getValidHashTab, replaceTabRoute } from "@/utils/hashRouteTabs.mjs";
 import { getPlatformDisplayName } from "@/utils/platformUtils";
 import { buildSearchQuery, matchesPluginSearch, normalizeStr, toInitials, toPinyinText } from "@/utils/pluginSearch";
 import axios from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const buildFailedPluginItems = (raw) => {
   return Object.entries(raw || {}).map(([dirName, info]) => {
@@ -31,9 +32,9 @@ export const useExtensionPage = () => {
   const route = useRoute();
 
   const getSelectedGitHubProxy = () => {
-    if (typeof window === "undefined" || !window.localStorage) return "";
-    return localStorage.getItem("githubProxyRadioValue") === "1"
-      ? localStorage.getItem("selectedGitHubProxy") || ""
+    if (typeof window === "undefined" || !safeLocalStorage) return "";
+    return safeLocalStorage.getItem("githubProxyRadioValue") === "1"
+      ? safeLocalStorage.getItem("selectedGitHubProxy") || ""
       : "";
   };
 
@@ -178,15 +179,15 @@ export const useExtensionPage = () => {
   const debouncedMarketSearch = ref("");
   const refreshingMarket = ref(false);
   const getInitialMarketListViewMode = () => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem("pluginMarketListViewMode") === "true";
+    if (typeof window !== "undefined" && safeLocalStorage) {
+      return safeLocalStorage.getItem("pluginMarketListViewMode") === "true";
     }
     return false;
   };
   const marketIsListView = ref(getInitialMarketListViewMode());
   const getInitialMarketItemsPerPage = () => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      const rawValue = Number(localStorage.getItem("pluginMarketItemsPerPage"));
+    if (typeof window !== "undefined" && safeLocalStorage) {
+      const rawValue = Number(safeLocalStorage.getItem("pluginMarketItemsPerPage"));
       if ([9, 25, 50, 100].includes(rawValue)) {
         return rawValue;
       }
@@ -1145,7 +1146,7 @@ export const useExtensionPage = () => {
     }
 
     // 加载当前选中的插件源
-    const currentSource = localStorage.getItem("selectedPluginSource");
+    const currentSource = safeLocalStorage.getItem("selectedPluginSource");
     if (currentSource) {
       selectedSource.value = currentSource;
     }
@@ -1181,9 +1182,9 @@ export const useExtensionPage = () => {
   const selectPluginSource = (sourceUrl) => {
     selectedSource.value = sourceUrl;
     if (sourceUrl) {
-      localStorage.setItem("selectedPluginSource", sourceUrl);
+      safeLocalStorage.setItem("selectedPluginSource", sourceUrl);
     } else {
-      localStorage.removeItem("selectedPluginSource");
+      safeLocalStorage.removeItem("selectedPluginSource");
     }
     // 重新加载插件市场数据
     refreshPluginMarket();
@@ -1222,7 +1223,7 @@ export const useExtensionPage = () => {
       // 如果删除的是当前选中的源，切换到默认源
       if (selectedSource.value === sourceToRemove.value.url) {
         selectedSource.value = null;
-        localStorage.removeItem("selectedPluginSource");
+        safeLocalStorage.removeItem("selectedPluginSource");
         // 重新加载插件市场数据
         refreshPluginMarket();
       }
@@ -1261,7 +1262,7 @@ export const useExtensionPage = () => {
         // 如果编辑的是当前选中的源，更新选中源
         if (selectedSource.value === originalSourceUrl.value) {
           selectedSource.value = normalizedUrl;
-          localStorage.setItem("selectedPluginSource", selectedSource.value);
+          safeLocalStorage.setItem("selectedPluginSource", selectedSource.value);
           // 重新加载插件市场数据
           refreshPluginMarket();
         }
@@ -1725,21 +1726,21 @@ export const useExtensionPage = () => {
     }, 300); // 300ms 防抖延迟
   });
 
-  // 监听显示模式变化并保存到 localStorage
+  // 监听显示模式变化并保存到 safeLocalStorage
   watch(isListView, (newVal) => {
     writeBooleanPreference(PLUGIN_LIST_VIEW_MODE_STORAGE_KEY, newVal);
   });
 
   watch(marketIsListView, (newVal) => {
-    if (typeof window !== "undefined" && window.localStorage) {
-      localStorage.setItem("pluginMarketListViewMode", String(newVal));
+    if (typeof window !== "undefined" && safeLocalStorage) {
+      safeLocalStorage.setItem("pluginMarketListViewMode", String(newVal));
     }
   });
 
   watch(marketItemsPerPage, (newVal) => {
     currentPage.value = 1;
-    if (typeof window !== "undefined" && window.localStorage) {
-      localStorage.setItem("pluginMarketItemsPerPage", String(newVal));
+    if (typeof window !== "undefined" && safeLocalStorage) {
+      safeLocalStorage.setItem("pluginMarketItemsPerPage", String(newVal));
     }
   });
 

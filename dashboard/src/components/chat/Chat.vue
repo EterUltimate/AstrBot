@@ -500,6 +500,7 @@ import { useI18n, useLanguageSwitcher, useModuleI18n } from "@/i18n/composables"
 import type { Locale } from "@/i18n/types";
 import { useCustomizerStore } from "@/stores/customizer";
 import { askForConfirmation, useConfirmDialog } from "@/utils/confirmDialog";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import { useToast } from "@/utils/toast";
 
 const props = withDefaults(defineProps<{ chatboxMode?: boolean }>(), {
@@ -621,7 +622,7 @@ const {
 });
 
 const transportMode = ref<TransportMode>(
-  (localStorage.getItem("chat.transportMode") as TransportMode) === "websocket" ? "websocket" : "sse",
+  (safeLocalStorage.getItem("chat.transportMode") as TransportMode) === "websocket" ? "websocket" : "sse",
 );
 const transportOptions: Array<{ value: TransportMode; labelKey: string }> = [
   { value: "sse", labelKey: "transport.sse" },
@@ -632,7 +633,7 @@ const currentTransportLabel = computed(() =>
 );
 
 watch(transportMode, (mode) => {
-  localStorage.setItem("chat.transportMode", mode);
+  safeLocalStorage.setItem("chat.transportMode", mode);
 });
 
 const isDark = computed(() => customizer.uiTheme === "PurpleThemeDark");

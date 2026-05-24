@@ -302,6 +302,8 @@ async def _restore_dashboard_password_state(
         core_lifecycle_td.astrbot_config,
         bool(dashboard_config.get("pbkdf2_password")),
     )
+
+
 @pytest_asyncio.fixture(scope="module")
 async def authenticated_header(app: Quart, core_lifecycle_td: AstrBotCoreLifecycle):
     """Handles login and returns an authenticated header."""
@@ -310,7 +312,6 @@ async def authenticated_header(app: Quart, core_lifecycle_td: AstrBotCoreLifecyc
         "/api/auth/login",
         json={
             "username": core_lifecycle_td.astrbot_config["dashboard"]["username"],
-
             "password": _resolve_dashboard_password(core_lifecycle_td),
         },
     )
@@ -341,7 +342,6 @@ async def test_auth_login(
         "/api/auth/login",
         json={
             "username": core_lifecycle_td.astrbot_config["dashboard"]["username"],
-
             "password": _resolve_dashboard_password(core_lifecycle_td),
         },
     )
@@ -2315,6 +2315,21 @@ async def test_get_stat(app: Quart, authenticated_header: dict):
     data = await response.get_json()
     assert data["status"] == "ok"
     assert "platform" in data["data"]
+
+
+@pytest.mark.asyncio
+async def test_get_runtime_status(app: Quart, authenticated_header: dict):
+    test_client = app.test_client()
+    response = await test_client.get(
+        "/api/stat/runtime-status",
+        headers=authenticated_header,
+    )
+    assert response.status_code == 200
+    data = await response.get_json()
+    assert data["status"] == "ok"
+    assert data["data"]["ready"] is True
+    assert data["data"]["failed"] is False
+    assert "state" in data["data"]
 
 
 @pytest.mark.asyncio

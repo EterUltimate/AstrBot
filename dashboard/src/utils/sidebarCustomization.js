@@ -1,13 +1,15 @@
-// Utility for managing sidebar customization in localStorage
+import { safeLocalStorage } from "@/utils/storageFallback";
+
+// Utility for managing sidebar customization in safeLocalStorage
 const STORAGE_KEY = "astrbot_sidebar_customization";
 
 /**
- * Get the customized sidebar configuration from localStorage
+ * Get the customized sidebar configuration from safeLocalStorage
  * @returns {Object|null} The customization config or null if not set
  */
 export function getSidebarCustomization() {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = safeLocalStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
   } catch (error) {
     console.error("Error reading sidebar customization:", error);
@@ -16,14 +18,14 @@ export function getSidebarCustomization() {
 }
 
 /**
- * Save the sidebar customization to localStorage
+ * Save the sidebar customization to safeLocalStorage
  * @param {Object} config - The customization configuration
  * @param {Array} config.mainItems - Array of item titles for main sidebar
  * @param {Array} config.moreItems - Array of item titles for "More Features" group
  */
 export function setSidebarCustomization(config) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(config));
   } catch (error) {
     console.error("Error saving sidebar customization:", error);
   }
@@ -34,7 +36,7 @@ export function setSidebarCustomization(config) {
  */
 export function clearSidebarCustomization() {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    safeLocalStorage.removeItem(STORAGE_KEY);
   } catch (error) {
     console.error("Error clearing sidebar customization:", error);
   }

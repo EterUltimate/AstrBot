@@ -568,6 +568,7 @@ import { useI18n } from "@/i18n/composables";
 import { askForConfirmation, useConfirmDialog } from "@/utils/confirmDialog";
 import axios, { isAxiosError, resolveApiUrl } from "@/utils/request";
 import { restartAstrBot as restartAstrBotRuntime } from "@/utils/restartAstrBot";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import WaitingForRestart from "./WaitingForRestart.vue";
 
 interface WfrExposed {
@@ -1039,7 +1040,7 @@ const resetImport = async () => {
 // 下载备份（使用浏览器原生下载，可显示下载进度）
 const downloadBackup = (filename: string) => {
   // 获取 token 用于鉴权（因为浏览器原生下载无法携带 Authorization header）
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
   if (!token) {
     alert(t("core.common.unauthorized"));
     return;

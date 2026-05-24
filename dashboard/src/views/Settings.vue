@@ -374,6 +374,7 @@ import type {
 } from "@/types/api";
 import axios, { AxiosError } from "@/utils/request";
 import { restartAstrBot as restartAstrBotRuntime } from "@/utils/restartAstrBot";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const { tm } = useModuleI18n("features/settings");
 const toastStore = useToastStore();
@@ -400,7 +401,7 @@ const themeMode = computed({
 });
 
 const getStoredColor = (key: string, fallback: string) => {
-  const stored = typeof window !== "undefined" ? localStorage.getItem(key) : null;
+  const stored = typeof window !== "undefined" ? safeLocalStorage.getItem(key) : null;
   return stored || fallback;
 };
 
@@ -460,7 +461,7 @@ const themePresets = [
 ];
 
 // Get stored preset or default to blue-business name
-const selectedThemePreset = ref(localStorage.getItem("themePreset") || themePresets[0].name);
+const selectedThemePreset = ref(safeLocalStorage.getItem("themePreset") || themePresets[0].name);
 
 // Simple array for dropdown display
 const presetOptions = themePresets.map((p) => p.name);
@@ -470,14 +471,14 @@ const applyThemePreset = (presetName: string) => {
   if (!preset) return;
 
   // Store the preset selection (store by name for display consistency)
-  localStorage.setItem("themePreset", presetName);
+  safeLocalStorage.setItem("themePreset", presetName);
   selectedThemePreset.value = presetName;
 
   // Update primary and secondary colors
   primaryColor.value = preset.primary;
   secondaryColor.value = preset.secondary;
-  localStorage.setItem("themePrimary", preset.primary);
-  localStorage.setItem("themeSecondary", preset.secondary);
+  safeLocalStorage.setItem("themePrimary", preset.primary);
+  safeLocalStorage.setItem("themeSecondary", preset.secondary);
 
   // Apply to themes
   applyThemeColors(preset.primary, preset.secondary);
@@ -511,21 +512,21 @@ applyThemeColors(primaryColor.value, secondaryColor.value);
 
 watch(primaryColor, (value) => {
   if (!value) return;
-  localStorage.setItem("themePrimary", value);
+  safeLocalStorage.setItem("themePrimary", value);
   applyThemeColors(value, secondaryColor.value);
 });
 
 watch(secondaryColor, (value) => {
   if (!value) return;
-  localStorage.setItem("themeSecondary", value);
+  safeLocalStorage.setItem("themeSecondary", value);
   applyThemeColors(primaryColor.value, value);
 });
 
 const resetThemeColors = () => {
   primaryColor.value = BlueBusinessLightTheme.colors.primary;
   secondaryColor.value = BlueBusinessLightTheme.colors.secondary;
-  localStorage.removeItem("themePrimary");
-  localStorage.removeItem("themeSecondary");
+  safeLocalStorage.removeItem("themePrimary");
+  safeLocalStorage.removeItem("themeSecondary");
   applyThemeColors(primaryColor.value, secondaryColor.value);
 };
 

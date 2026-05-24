@@ -1,4 +1,5 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const ABSOLUTE_URL_PATTERN = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//;
 
@@ -150,12 +151,12 @@ service.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     config.url = normalizePathForBase(config.url, normalizedBaseUrl);
   }
 
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
   if (token) {
     config.headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const locale = localStorage.getItem("astrbot-locale");
+  const locale = safeLocalStorage.getItem("astrbot-locale");
   if (locale) {
     config.headers.set("Accept-Language", locale);
   }

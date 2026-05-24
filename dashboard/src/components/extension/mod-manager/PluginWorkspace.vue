@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import DetachedTabPane from "./DetachedTabPane.vue";
 import PluginPanel from "./PluginPanel.vue";
 import ResizableSplitPane from "./ResizableSplitPane.vue";
@@ -32,17 +33,17 @@ const splitRatioModel = computed<number>({
   set: (ratio) => emit("update:splitRatio", ratio),
 });
 
-// Detached tab state with localStorage persistence
+// Detached tab state with safeLocalStorage persistence
 const validTabs: PluginPanelTab[] = ["info", "config", "overview", "changelog", "reserved"];
 
 function loadDetachedTab(): PluginPanelTab | null {
   try {
-    const stored = localStorage.getItem(DETACHED_TAB_KEY);
+    const stored = safeLocalStorage.getItem(DETACHED_TAB_KEY);
     if (stored && validTabs.includes(stored as PluginPanelTab)) {
       return stored as PluginPanelTab;
     }
   } catch {
-    // localStorage unavailable
+    // safeLocalStorage unavailable
   }
   return null;
 }
@@ -52,12 +53,12 @@ const detachedTab = ref<PluginPanelTab | null>(loadDetachedTab());
 watch(detachedTab, (val) => {
   try {
     if (val) {
-      localStorage.setItem(DETACHED_TAB_KEY, val);
+      safeLocalStorage.setItem(DETACHED_TAB_KEY, val);
     } else {
-      localStorage.removeItem(DETACHED_TAB_KEY);
+      safeLocalStorage.removeItem(DETACHED_TAB_KEY);
     }
   } catch {
-    // localStorage unavailable
+    // safeLocalStorage unavailable
   }
 });
 

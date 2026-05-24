@@ -361,7 +361,13 @@ class TestLocalPythonComponent:
                 stderr=b"",
             )
 
-        with patch("astrbot.core.computer.booters.local.subprocess.run", fake_run):
+        with (
+            patch(
+                "astrbot.core.computer.booters.local._is_windows_platform",
+                return_value=True,
+            ),
+            patch("astrbot.core.computer.booters.local.subprocess.run", fake_run),
+        ):
             result = await python.exec("print('中文输出')")
 
         assert result["data"]["output"]["text"] == "中文输出\n"

@@ -366,6 +366,7 @@ import { useCommonStore } from "@/stores/common";
 import { askForConfirmation as askForConfirmationDialog, useConfirmDialog } from "@/utils/confirmDialog";
 import { getPlatformIcon } from "@/utils/platformUtils";
 import axios, { resolveApiUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export default {
   name: "PlatformPage",
@@ -402,7 +403,7 @@ export default {
       save_message: "",
       save_message_success: "success",
 
-      showConsole: localStorage.getItem("platformPage_showConsole") === "true",
+      showConsole: safeLocalStorage.getItem("platformPage_showConsole") === "true",
 
       showWebhookDialog: false,
       currentWebhookUuid: "",
@@ -438,7 +439,7 @@ export default {
 
   watch: {
     showConsole(newValue) {
-      localStorage.setItem("platformPage_showConsole", newValue.toString());
+      safeLocalStorage.setItem("platformPage_showConsole", newValue.toString());
     },
 
     showIdConflictDialog(newValue) {

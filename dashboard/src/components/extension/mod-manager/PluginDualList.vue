@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import PluginListTable from "./PluginListTable.vue";
 import ResizableSplitPane from "./ResizableSplitPane.vue";
 import type { PluginSummary } from "./types";
@@ -44,13 +45,13 @@ const emit = defineEmits<{
 const selectedInactiveNames = ref<string[]>([]);
 const selectedActiveNames = ref<string[]>([]);
 
-const splitRatio = ref(parseStoredRatio(localStorage.getItem(LIST_SPLIT_RATIO_KEY)) ?? 0.5);
+const splitRatio = ref(parseStoredRatio(safeLocalStorage.getItem(LIST_SPLIT_RATIO_KEY)) ?? 0.5);
 
 watch(
   splitRatio,
   (val) => {
     if (!Number.isFinite(val)) return;
-    localStorage.setItem(LIST_SPLIT_RATIO_KEY, String(val));
+    safeLocalStorage.setItem(LIST_SPLIT_RATIO_KEY, String(val));
   },
   { flush: "post" },
 );

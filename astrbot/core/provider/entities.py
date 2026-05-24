@@ -29,6 +29,7 @@ from astrbot.core.agent.tool import ToolSet
 from astrbot.core.db.po import Conversation
 from astrbot.core.message.message_event_result import MessageChain
 from astrbot.core.utils.astrbot_path import get_astrbot_temp_path
+from astrbot.core.utils.image_ref_utils import resolve_file_url_path
 from astrbot.core.utils.io import download_file, download_image_by_url
 
 
@@ -217,8 +218,8 @@ class ProviderRequest:
                 if image_url.startswith("http"):
                     image_path = await download_image_by_url(image_url)
                     image_data = await self._encode_image_bs64(image_path)
-                elif image_url.startswith("file:///"):
-                    image_path = image_url.replace("file:///", "")
+                elif image_url.startswith("file://"):
+                    image_path = resolve_file_url_path(image_url)
                     image_data = await self._encode_image_bs64(image_path)
                 else:
                     image_data = await self._encode_image_bs64(image_url)
@@ -255,8 +256,8 @@ class ProviderRequest:
                                 temp_audio_path,
                                 exc,
                             )
-                elif audio_url.startswith("file:///"):
-                    audio_path = audio_url.replace("file:///", "")
+                elif audio_url.startswith("file://"):
+                    audio_path = resolve_file_url_path(audio_url)
                     audio_data = await self._encode_audio_bs64(
                         audio_path,
                         source_ref=audio_url,

@@ -5,7 +5,6 @@ Each endpoint is hit once — the test only checks that it does not crash
 """
 
 import pytest
-import pytest_asyncio
 from _pytest.mark.structures import ParameterSet
 from quart import Quart
 
@@ -27,7 +26,11 @@ ROUTES = [
     _p("GET", "/api/chat/get_session?conversation_id=0"),
     _p("GET", "/api/chat/delete_session?conversation_id=0"),
     _p("POST", "/api/chat/batch_delete_sessions", {"session_ids": []}),
-    _p("POST", "/api/chat/update_session_display_name", {"conversation_id": "0", "name": "t"}),
+    _p(
+        "POST",
+        "/api/chat/update_session_display_name",
+        {"conversation_id": "0", "name": "t"},
+    ),
     _p("GET", "/api/chat/get_file?filename=nonexistent"),
     _p("POST", "/api/chat/post_file"),
     _p("GET", "/api/chat/get_attachment?attachment_id=0"),
@@ -81,6 +84,7 @@ ROUTES = [
     # — stat —
     _p("GET", "/api/stat/get"),
     _p("GET", "/api/stat/version"),
+    _p("GET", "/api/stat/runtime-status"),
     _p("GET", "/api/stat/storage"),
     _p("GET", "/api/stat/changelog"),
     # — update —
@@ -107,7 +111,7 @@ class TestAllRoutes:
     """Hit every registered route and assert no 500 / no crash."""
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("method,path,body", ROUTES)
+    @pytest.mark.parametrize(("method", "path", "body"), ROUTES)
     async def test_route_returns_no_500(
         self,
         method: str,

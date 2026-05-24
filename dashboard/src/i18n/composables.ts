@@ -1,4 +1,5 @@
 import { computed, ref } from "vue";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import { translations as staticTranslations } from "./translations";
 import type { Locale } from "./types";
 
@@ -87,8 +88,8 @@ export function useI18n() {
       currentLocale.value = newLocale;
       loadTranslations(newLocale);
 
-      // 保存到localStorage
-      localStorage.setItem("astrbot-locale", newLocale);
+      // 保存到safeLocalStorage
+      safeLocalStorage.setItem("astrbot-locale", newLocale);
 
       // 触发自定义事件，通知相关页面重新加载配置数据
       // 这是因为插件适配器的 i18n 数据是通过后端 API 注入的，
@@ -223,8 +224,8 @@ function deepMerge(target: Record<string, any>, source: Record<string, any>) {
 
 // 初始化函数（在应用启动时调用）
 export async function setupI18n() {
-  // 从localStorage获取保存的语言设置
-  const savedLocale = localStorage.getItem("astrbot-locale") as Locale;
+  // 从safeLocalStorage获取保存的语言设置
+  const savedLocale = safeLocalStorage.getItem("astrbot-locale") as Locale;
   const initialLocale =
     savedLocale && ["zh-CN", "zh-HK", "zh-TW", "en-US", "ru-RU"].includes(savedLocale) ? savedLocale : "zh-CN";
 

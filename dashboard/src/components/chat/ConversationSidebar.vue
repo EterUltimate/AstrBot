@@ -463,6 +463,7 @@ import type { Session } from "@/composables/useSessions";
 import { useI18n, useLanguageSwitcher, useModuleI18n } from "@/i18n/composables";
 import type { Locale } from "@/i18n/types";
 import { askForConfirmation, useConfirmDialog } from "@/utils/confirmDialog";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 interface Props {
   sessions: Session[];
@@ -586,8 +587,8 @@ const currentSendShortcutLabel = computed(() => {
   return found?.label ?? "";
 });
 
-// 从 localStorage 读取侧边栏折叠状态
-const savedCollapsedState = localStorage.getItem("sidebarCollapsed");
+// 从 safeLocalStorage 读取侧边栏折叠状态
+const savedCollapsedState = safeLocalStorage.getItem("sidebarCollapsed");
 if (savedCollapsedState !== null) {
   sidebarCollapsed.value = JSON.parse(savedCollapsedState);
 } else {
@@ -596,7 +597,7 @@ if (savedCollapsedState !== null) {
 
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value;
-  localStorage.setItem("sidebarCollapsed", JSON.stringify(sidebarCollapsed.value));
+  safeLocalStorage.setItem("sidebarCollapsed", JSON.stringify(sidebarCollapsed.value));
 }
 
 async function handleDeleteConversation(session: Session) {

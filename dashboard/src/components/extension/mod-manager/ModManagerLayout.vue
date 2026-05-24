@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 
 import { usePluginConfigCache } from "@/composables/usePluginConfigCache";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import ModTopToolbar from "./ModTopToolbar.vue";
 import PluginDualList from "./PluginDualList.vue";
 import PluginWorkspace from "./PluginWorkspace.vue";
@@ -252,7 +253,7 @@ async function tryAutoFitMainSplitRatio(reason: string) {
 }
 
 onMounted(() => {
-  const mainStoredRaw = localStorage.getItem(MAIN_SPLIT_RATIO_KEY);
+  const mainStoredRaw = safeLocalStorage.getItem(MAIN_SPLIT_RATIO_KEY);
   const mainStored = parseStoredRatio(mainStoredRaw);
   if (mainStored != null) {
     mainSplitRatio.value = mainStored;
@@ -260,7 +261,7 @@ onMounted(() => {
     shouldAutoFitMainSplit.value = true;
   }
 
-  const rightStored = parseStoredRatio(localStorage.getItem(RIGHT_PANE_RATIO_KEY));
+  const rightStored = parseStoredRatio(safeLocalStorage.getItem(RIGHT_PANE_RATIO_KEY));
   if (rightStored != null) {
     rightPaneRatio.value = rightStored;
   }
@@ -275,7 +276,7 @@ watch(
   mainSplitRatio,
   (val) => {
     if (!Number.isFinite(val)) return;
-    localStorage.setItem(MAIN_SPLIT_RATIO_KEY, String(val));
+    safeLocalStorage.setItem(MAIN_SPLIT_RATIO_KEY, String(val));
   },
   { flush: "post" },
 );
@@ -284,7 +285,7 @@ watch(
   rightPaneRatio,
   (val) => {
     if (!Number.isFinite(val)) return;
-    localStorage.setItem(RIGHT_PANE_RATIO_KEY, String(val));
+    safeLocalStorage.setItem(RIGHT_PANE_RATIO_KEY, String(val));
   },
   { flush: "post" },
 );

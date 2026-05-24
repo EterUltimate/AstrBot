@@ -56,6 +56,7 @@
 import { ref } from "vue";
 import { useModuleI18n } from "@/i18n/composables";
 import axios from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const { tm: t } = useModuleI18n("features/knowledge-base/detail");
 
@@ -131,7 +132,7 @@ const pollProgress = async () => {
 
 const downloadPackage = () => {
   if (!result.value?.filename) return;
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
   if (!token) return;
 
   const link = document.createElement("a");

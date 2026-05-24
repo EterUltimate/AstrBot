@@ -81,6 +81,7 @@
 <script lang="ts">
 import { useModuleI18n } from "@/i18n/composables";
 import axios from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export default {
   setup() {
@@ -112,13 +113,13 @@ export default {
       if (!newVal) {
         newVal = "";
       }
-      localStorage.setItem("selectedGitHubProxy", newVal);
+      safeLocalStorage.setItem("selectedGitHubProxy", newVal);
     },
     radioValue: function (newVal) {
       if (this.initializing) {
         return;
       }
-      localStorage.setItem("githubProxyRadioValue", newVal);
+      safeLocalStorage.setItem("githubProxyRadioValue", newVal);
       if (String(newVal) === "0") {
         this.selectedGitHubProxy = "";
       } else if (String(this.githubProxyRadioControl) !== "-1") {
@@ -130,7 +131,7 @@ export default {
         return;
       }
       const normalizedVal = String(newVal);
-      localStorage.setItem("githubProxyRadioControl", normalizedVal);
+      safeLocalStorage.setItem("githubProxyRadioControl", normalizedVal);
       if (String(this.radioValue) !== "1") {
         this.selectedGitHubProxy = "";
         return;
@@ -143,9 +144,9 @@ export default {
   mounted() {
     this.initializing = true;
 
-    const savedProxy = localStorage.getItem("selectedGitHubProxy") || "";
-    const savedRadio = localStorage.getItem("githubProxyRadioValue") || "0";
-    const savedControl = String(localStorage.getItem("githubProxyRadioControl") || "0");
+    const savedProxy = safeLocalStorage.getItem("selectedGitHubProxy") || "";
+    const savedRadio = safeLocalStorage.getItem("githubProxyRadioValue") || "0";
+    const savedControl = String(safeLocalStorage.getItem("githubProxyRadioControl") || "0");
 
     this.radioValue = savedRadio;
     this.githubProxyRadioControl = savedControl;

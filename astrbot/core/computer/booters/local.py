@@ -107,7 +107,7 @@ def _decode_bytes_with_fallback(
         if decoded := _try_decode(encoding):
             return decoded
 
-    if os.name == "nt":
+    if _is_windows_platform():
         for encoding in ("mbcs", "cp936", "gbk", "gb18030", preferred):
             if decoded := _try_decode(encoding):
                 return decoded
@@ -128,8 +128,12 @@ def _decode_process_output(
     return decoded
 
 
-def _is_windows_shell() -> bool:
+def _is_windows_platform() -> bool:
     return os.name == "nt"
+
+
+def _is_windows_shell() -> bool:
+    return _is_windows_platform()
 
 
 def _merged_env(env: dict[str, str] | None) -> dict[str, str] | None:
@@ -463,7 +467,7 @@ class LocalFileSystemComponent(FileSystemComponent):
     ) -> dict[str, Any]:
         def _run() -> dict[str, Any]:
             search_path = _ensure_safe_path(path) if path else "."
-            if os.name == "nt":
+            if _is_windows_platform():
                 matches: list[str] = []
                 root = Path(search_path)
                 files = [root] if root.is_file() else root.rglob(glob or "*")

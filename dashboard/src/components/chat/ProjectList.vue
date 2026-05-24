@@ -84,6 +84,7 @@
 import { ref } from "vue";
 import { useModuleI18n } from "@/i18n/composables";
 import { askForConfirmation, useConfirmDialog } from "@/utils/confirmDialog";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export interface Project {
   project_id: string;
@@ -116,15 +117,15 @@ const confirmDialog = useConfirmDialog();
 
 const expanded = ref(props.initialExpanded);
 
-// 从 localStorage 读取项目展开状态
-const savedProjectsExpandedState = localStorage.getItem("projectsExpanded");
+// 从 safeLocalStorage 读取项目展开状态
+const savedProjectsExpandedState = safeLocalStorage.getItem("projectsExpanded");
 if (savedProjectsExpandedState !== null) {
   expanded.value = JSON.parse(savedProjectsExpandedState);
 }
 
 function toggleExpanded() {
   expanded.value = !expanded.value;
-  localStorage.setItem("projectsExpanded", JSON.stringify(expanded.value));
+  safeLocalStorage.setItem("projectsExpanded", JSON.stringify(expanded.value));
 }
 
 async function handleDeleteProject(project: Project) {

@@ -214,6 +214,7 @@
 import { EventSourcePolyfill } from "event-source-polyfill";
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import axios, { resolveApiUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const loadingRecords = ref(false);
 const savingSettings = ref(false);
@@ -445,7 +446,7 @@ async function askAI() {
   streamingAnswer.value = "";
   let hadError = false;
   try {
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     const response = await fetch(resolveApiUrl("/api/error-analysis/ask/stream"), {
       method: "POST",
       headers: {
@@ -509,7 +510,7 @@ function connectEvents() {
     eventSource.close();
     eventSource = null;
   }
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
   eventSource = new EventSourcePolyfill("/api/error-analysis/events", {
     headers: {
       Authorization: token ? `Bearer ${token}` : "",

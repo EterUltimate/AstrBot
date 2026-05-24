@@ -2,6 +2,7 @@
 import axios from "axios";
 import ConsoleDisplayer from "@/components/shared/ConsoleDisplayer.vue";
 import { useModuleI18n } from "@/i18n/composables";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const { tm } = useModuleI18n("features/console");
 </script>
@@ -70,7 +71,7 @@ export default {
   },
   data() {
     return {
-      autoScrollEnabled: localStorage.getItem('console_auto_scroll') !== 'false',
+      autoScrollEnabled: safeLocalStorage.getItem('console_auto_scroll') !== 'false',
       pipDialog: false,
       pipInstallPayload: {
         package: '',
@@ -81,14 +82,14 @@ export default {
     }
   },
   mounted() {
-    const savedAutoScroll = localStorage.getItem(CONSOLE_AUTO_SCROLL_STORAGE_KEY);
+    const savedAutoScroll = safeLocalStorage.getItem(CONSOLE_AUTO_SCROLL_STORAGE_KEY);
     if (savedAutoScroll !== null) {
       this.autoScrollEnabled = savedAutoScroll === 'true';
     }
   },
   watch: {
     autoScrollEnabled(val) {
-      localStorage.setItem(CONSOLE_AUTO_SCROLL_STORAGE_KEY, String(val));
+      safeLocalStorage.setItem(CONSOLE_AUTO_SCROLL_STORAGE_KEY, String(val));
     }
   },
   methods: {

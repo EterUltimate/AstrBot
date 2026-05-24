@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import config from "@/config";
 import vuetify from "@/plugins/vuetify";
 import { DARK_THEME_NAME, LIGHT_THEME_NAME } from "@/theme/constants";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export const useCustomizerStore = defineStore("customizer", {
   state: () => ({
@@ -11,9 +12,9 @@ export const useCustomizerStore = defineStore("customizer", {
     fontTheme: "Poppins",
     uiTheme: config.uiTheme,
     inputBg: config.inputBg,
-    viewMode: (localStorage.getItem("viewMode") as "bot" | "chat") || "bot", // 'bot' 或 'chat'
+    viewMode: (safeLocalStorage.getItem("viewMode") as "bot" | "chat") || "bot", // 'bot' 或 'chat'
     chatSidebarOpen: false, // chat mode mobile sidebar state
-    autoSwitchTheme: localStorage.getItem("autoSwitchTheme") === "true", // 自动同步主题
+    autoSwitchTheme: safeLocalStorage.getItem("autoSwitchTheme") === "true", // 自动同步主题
   }),
 
   getters: {
@@ -31,7 +32,7 @@ export const useCustomizerStore = defineStore("customizer", {
     },
     SET_UI_THEME(payload: string) {
       this.uiTheme = payload;
-      localStorage.setItem("uiTheme", payload);
+      safeLocalStorage.setItem("uiTheme", payload);
 
       if (typeof vuetify.theme?.change === "function") {
         vuetify.theme.change(payload);
@@ -41,11 +42,11 @@ export const useCustomizerStore = defineStore("customizer", {
     },
     SET_VIEW_MODE(payload: "bot" | "chat") {
       this.viewMode = payload;
-      localStorage.setItem("viewMode", payload);
+      safeLocalStorage.setItem("viewMode", payload);
     },
     SET_AUTO_SYNC(payload: boolean) {
       this.autoSwitchTheme = payload;
-      localStorage.setItem("autoSwitchTheme", String(payload));
+      safeLocalStorage.setItem("autoSwitchTheme", String(payload));
     },
     // 手动切换主题（同时关闭自动同步）
     TOGGLE_DARK_MODE() {

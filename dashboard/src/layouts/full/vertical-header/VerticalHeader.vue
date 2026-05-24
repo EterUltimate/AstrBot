@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { md5 } from "js-md5";
 import { enableKatex, enableMermaid, MarkdownRender } from "markstream-vue";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from "vue";
 import type { VForm } from "vuetify/components";
 import Logo from "@/components/shared/Logo.vue";
 import { useAuthStore } from "@/stores/auth";
@@ -18,6 +18,7 @@ import { useI18n, useLanguageSwitcher } from "@/i18n/composables";
 import type { Locale } from "@/i18n/types";
 import { router } from "@/router";
 import { getDesktopRuntimeInfo } from "@/utils/desktopRuntime";
+import { safeLocalStorage, safeSessionStorage } from "@/utils/storageFallback";
 import AboutPage from "@/views/AboutPage.vue";
 
 enableKatex();
@@ -33,7 +34,7 @@ let dialog = ref(false);
 let accountWarning = ref(false);
 let updateStatusDialog = ref(false);
 let aboutDialog = ref(false);
-const username = localStorage.getItem("user");
+const username = safeLocalStorage.getItem("user");
 let password = ref("");
 let newPassword = ref("");
 let confirmPassword = ref("");
@@ -71,8 +72,9 @@ const getAppUpdaterBridge = (): AstrBotAppUpdaterBridge | null => {
 };
 
 const getSelectedGitHubProxy = () => {
-  if (typeof window === "undefined" || !window.localStorage) return "";
-  return localStorage.getItem("githubProxyRadioValue") === "1" ? localStorage.getItem("selectedGitHubProxy") || "" : "";
+  return safeLocalStorage.getItem("githubProxyRadioValue") === "1"
+    ? safeLocalStorage.getItem("selectedGitHubProxy") || ""
+    : "";
 };
 
 // Release Notes Modal
@@ -300,26 +302,26 @@ function getVersion() {
         accountWarningUpgrade.value = !!password_upgrade_required;
         accountWarningLegacy.value = !!legacy_pwd_hint && !password_upgrade_required;
         if (change_pwd_hint || (legacy_pwd_hint && !password_upgrade_required)) {
-          localStorage.setItem("change_pwd_hint", "true");
+          safeLocalStorage.setItem("change_pwd_hint", "true");
         } else {
-          localStorage.removeItem("change_pwd_hint");
+          safeLocalStorage.removeItem("change_pwd_hint");
         }
         if (legacy_pwd_hint && !password_upgrade_required) {
-          localStorage.setItem("legacy_pwd_hint", "true");
+          safeLocalStorage.setItem("legacy_pwd_hint", "true");
         } else {
-          localStorage.removeItem("legacy_pwd_hint");
+          safeLocalStorage.removeItem("legacy_pwd_hint");
         }
         if (password_upgrade_required) {
-          localStorage.setItem("password_upgrade_required", "true");
+          safeLocalStorage.setItem("password_upgrade_required", "true");
         } else {
-          localStorage.removeItem("password_upgrade_required");
+          safeLocalStorage.removeItem("password_upgrade_required");
         }
       } else {
         accountWarningLegacy.value = false;
         accountWarningUpgrade.value = false;
-        localStorage.removeItem("change_pwd_hint");
-        localStorage.removeItem("legacy_pwd_hint");
-        localStorage.removeItem("password_upgrade_required");
+        safeLocalStorage.removeItem("change_pwd_hint");
+        safeLocalStorage.removeItem("legacy_pwd_hint");
+        safeLocalStorage.removeItem("password_upgrade_required");
       }
     })
     .catch((err) => {
@@ -328,9 +330,9 @@ function getVersion() {
 }
 
 function initPasswordWarningFromStorage() {
-  const hasChangePwdHint = localStorage.getItem("change_pwd_hint") === "true";
-  const hasLegacyPwdHint = localStorage.getItem("legacy_pwd_hint") === "true";
-  const hasPasswordUpgradeRequired = localStorage.getItem("password_upgrade_required") === "true";
+  const hasChangePwdHint = safeLocalStorage.getItem("change_pwd_hint") === "true";
+  const hasLegacyPwdHint = safeLocalStorage.getItem("legacy_pwd_hint") === "true";
+  const hasPasswordUpgradeRequired = safeLocalStorage.getItem("password_upgrade_required") === "true";
   if (hasChangePwdHint || hasLegacyPwdHint || hasPasswordUpgradeRequired) {
     dialog.value = true;
     accountWarning.value = true;
@@ -642,12 +644,12 @@ onMounted(() => {
       const parts = route.fullPath.split("/");
       const sessionId = parts[2];
       if (sessionId) {
-        sessionStorage.setItem(LAST_CHAT_ROUTE_KEY, sessionId);
+        safeSessionStorage.setItem(LAST_CHAT_ROUTE_KEY, sessionId);
         console.log("Initial save chat ID:", sessionId);
       }
     } else {
       // 保存 bot 路由（非 chat 頁面）
-      sessionStorage.setItem(LAST_BOT_ROUTE_KEY, route.fullPath);
+      safeSessionStorage.setItem(LAST_BOT_ROUTE_KEY, route.fullPath);
       console.log("Initial save bot route:", route.fullPath);
     }
   }
@@ -671,7 +673,7 @@ watch(
 
       // ✅ bot：只存「非 chat 頁」
       if (!isChat) {
-        sessionStorage.setItem(LAST_BOT_ROUTE_KEY, newPath);
+        safeSessionStorage.setItem(LAST_BOT_ROUTE_KEY, newPath);
       }
 
       // ✅ chat：只存 sessionId
@@ -680,7 +682,7 @@ watch(
         const sessionId = parts[2];
 
         if (sessionId) {
-          sessionStorage.setItem(LAST_CHAT_ROUTE_KEY, sessionId);
+          safeSessionStorage.setItem(LAST_CHAT_ROUTE_KEY, sessionId);
         }
       }
     } catch (e) {
@@ -693,26 +695,19 @@ const currentMode = computed({
   get: () => (isChatPath.value ? "chat" : "bot"),
   set: (val: "chat" | "bot") => {
     try {
-      // 檢查 window 和 sessionStorage 是否存在
-      if (typeof window === "undefined" || typeof sessionStorage === "undefined") {
-        // 如果在非瀏覽器環境中，不做任何 sessionStorage 操作
-        console.warn("sessionStorage is not available in this environment");
-        return;
-      }
-
       if (val === "chat") {
-        const lastSessionId = sessionStorage.getItem(LAST_CHAT_ROUTE_KEY);
+        const lastSessionId = safeSessionStorage.getItem(LAST_CHAT_ROUTE_KEY);
         router.push(lastSessionId ? `/chat/${lastSessionId}` : "/chat");
       } else {
-        let lastBotRoute = sessionStorage.getItem(LAST_BOT_ROUTE_KEY) || "/";
+        let lastBotRoute = safeSessionStorage.getItem(LAST_BOT_ROUTE_KEY) || "/";
         if (lastBotRoute.startsWith("/chat")) {
           lastBotRoute = "/";
         }
         router.push(lastBotRoute);
       }
     } catch (e) {
-      // 在受限隱私模式等環境中，sessionStorage 操作可能會拋出 SecurityError
-      console.warn("Failed to access sessionStorage in currentMode setter:", e);
+      // 在受限隱私模式等環境中，safeSessionStorage 操作可能會拋出 SecurityError
+      console.warn("Failed to access safeSessionStorage in currentMode setter:", e);
     }
   },
 });

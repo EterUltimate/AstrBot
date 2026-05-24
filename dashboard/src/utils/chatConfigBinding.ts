@@ -1,3 +1,4 @@
+import { safeLocalStorage } from "@/utils/storageFallback";
 export const CHAT_SELECTED_CONFIG_STORAGE_KEY = "chat.selectedConfigId";
 
 export type ChatMessageType = "FriendMessage" | "GroupMessage";
@@ -12,10 +13,10 @@ export interface WebchatUmoDetails {
 
 function getFromLocalStorage(key: string, fallback: string): string {
   try {
-    if (typeof localStorage === "undefined") {
+    if (typeof safeLocalStorage === "undefined") {
       return fallback;
     }
-    const value = localStorage.getItem(key);
+    const value = safeLocalStorage.getItem(key);
     return value == null ? fallback : value;
   } catch {
     return fallback;
@@ -24,10 +25,10 @@ function getFromLocalStorage(key: string, fallback: string): string {
 
 function setToLocalStorage(key: string, value: string): void {
   try {
-    if (typeof localStorage === "undefined") {
+    if (typeof safeLocalStorage === "undefined") {
       return;
     }
-    localStorage.setItem(key, value);
+    safeLocalStorage.setItem(key, value);
   } catch {
     // Ignore storage errors (e.g. private mode / restricted storage).
   }

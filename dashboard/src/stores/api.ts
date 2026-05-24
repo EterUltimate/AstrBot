@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { getApiBaseUrl, normalizeConfiguredApiBaseUrl, setApiBaseUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export type ApiPreset = {
   name: string;
@@ -8,10 +9,10 @@ export type ApiPreset = {
 
 export const useApiStore = defineStore("api", {
   state: () => ({
-    // 优先从 localStorage 读取用户手动设置的地址
-    apiBaseUrl: localStorage.getItem("apiBaseUrl") || getApiBaseUrl() || "",
+    // 优先从 safeLocalStorage 读取用户手动设置的地址
+    apiBaseUrl: safeLocalStorage.getItem("apiBaseUrl") || getApiBaseUrl() || "",
     configPresets: [] as ApiPreset[],
-    customPresets: JSON.parse(localStorage.getItem("customPresets") || "[]") as ApiPreset[],
+    customPresets: JSON.parse(safeLocalStorage.getItem("customPresets") || "[]") as ApiPreset[],
   }),
   getters: {
     presets: (state): ApiPreset[] => [...state.configPresets, ...state.customPresets],
@@ -23,12 +24,12 @@ export const useApiStore = defineStore("api", {
 
     addPreset(preset: ApiPreset) {
       this.customPresets.push(preset);
-      localStorage.setItem("customPresets", JSON.stringify(this.customPresets));
+      safeLocalStorage.setItem("customPresets", JSON.stringify(this.customPresets));
     },
 
     removePreset(name: string) {
       this.customPresets = this.customPresets.filter((p) => p.name !== name);
-      localStorage.setItem("customPresets", JSON.stringify(this.customPresets));
+      safeLocalStorage.setItem("customPresets", JSON.stringify(this.customPresets));
     },
 
     /**
@@ -42,9 +43,9 @@ export const useApiStore = defineStore("api", {
       this.apiBaseUrl = normalized;
 
       if (normalized) {
-        localStorage.setItem("apiBaseUrl", normalized);
+        safeLocalStorage.setItem("apiBaseUrl", normalized);
       } else {
-        localStorage.removeItem("apiBaseUrl");
+        safeLocalStorage.removeItem("apiBaseUrl");
       }
 
       setApiBaseUrl(normalized);
@@ -52,7 +53,7 @@ export const useApiStore = defineStore("api", {
 
     /**
      * 初始化 API 配置
-     * 通常在应用启动时调用，同步 localStorage 到 axios
+     * 通常在应用启动时调用，同步 safeLocalStorage 到 axios
      */
     init() {
       if (this.apiBaseUrl) {

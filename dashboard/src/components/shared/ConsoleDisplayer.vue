@@ -98,6 +98,7 @@ import { useModuleI18n } from "@/i18n/composables";
 import { useCommonStore } from "@/stores/common";
 import { useCustomizerStore } from "@/stores/customizer";
 import axios, { resolveApiUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 const LEADING_ANSI_PATTERN = new RegExp(String.raw`^(\u001b\[[0-9;]+m)`);
 const ANSI_PATTERN = new RegExp(String.raw`\u001b\[[0-9;]+m`, "g");
@@ -160,7 +161,7 @@ export default {
   data() {
     return {
       isFullscreen: false,
-      flushMode: localStorage.getItem("console_flush_mode") === "true",
+      flushMode: safeLocalStorage.getItem("console_flush_mode") === "true",
       logLevels: ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
       selectedLevels: ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
       selectedTags: [],
@@ -237,7 +238,7 @@ export default {
       this.persistState();
     },
     flushMode(val) {
-      localStorage.setItem("console_flush_mode", val);
+      safeLocalStorage.setItem("console_flush_mode", val);
     },
   },
   async mounted() {
@@ -268,13 +269,13 @@ export default {
 
     restorePersistedState() {
       const storageKey = this.getStorageKey();
-      if (!storageKey || typeof window === "undefined" || !window.localStorage) {
+      if (!storageKey || typeof window === "undefined" || !safeLocalStorage) {
         return;
       }
 
       try {
         this.suspendFilterSync = true;
-        const raw = localStorage.getItem(storageKey);
+        const raw = safeLocalStorage.getItem(storageKey);
         if (!raw) {
           return;
         }
@@ -299,12 +300,12 @@ export default {
 
     persistState() {
       const storageKey = this.getStorageKey();
-      if (!storageKey || typeof window === "undefined" || !window.localStorage) {
+      if (!storageKey || typeof window === "undefined" || !safeLocalStorage) {
         return;
       }
 
       try {
-        localStorage.setItem(
+        safeLocalStorage.setItem(
           storageKey,
           JSON.stringify({
             selectedLevels: this.selectedLevels,

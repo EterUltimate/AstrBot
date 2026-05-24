@@ -330,6 +330,8 @@ import { VueMonacoEditor } from "@guolao/vue-monaco-editor";
 import type { RouteLocationNormalized } from "vue-router";
 import StandaloneChat from "@/components/chat/StandaloneChat.vue";
 import AstrBotCoreConfigWrapper from "@/components/config/AstrBotCoreConfigWrapper.vue";
+import ConfigProfileSidebar from "@/components/config/ConfigProfileSidebar.vue";
+import ConfigRouteManagerDialog from "@/components/config/ConfigRouteManagerDialog.vue";
 import UnsavedChangesConfirmDialog from "@/components/config/UnsavedChangesConfirmDialog.vue";
 import WaitingForRestart from "@/components/shared/WaitingForRestart.vue";
 import { useI18n, useModuleI18n } from "@/i18n/composables";

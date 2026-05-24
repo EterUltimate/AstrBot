@@ -1,5 +1,4 @@
 import ntpath
-import posixpath
 import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -135,7 +134,8 @@ class _FakeZipArchive:
 
 
 def _build_fake_archive_entries(archive_root: str) -> list[str]:
-    return [archive_root, posixpath.join(archive_root, ".dockerignore")]
+    root = archive_root.rstrip("/")
+    return [archive_root, f"{root}/.dockerignore"]
 
 
 def _build_fake_archive_entries_with_first_file(root_dir: str) -> list[str]:

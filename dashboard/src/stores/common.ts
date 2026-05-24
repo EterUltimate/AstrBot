@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import axios, { resolveApiUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 interface LogObject {
   uuid?: string;
@@ -46,10 +47,13 @@ export const useCommonStore = defineStore("common", () => {
     const controller = new AbortController();
     const { signal } = controller;
 
-    const headers = {
+    const headers: Record<string, string> = {
       "Content-Type": "multipart/form-data",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
     };
+    const token = safeLocalStorage.getItem("token");
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
 
     fetch(resolveApiUrl("/api/live-log"), {
       method: "GET",

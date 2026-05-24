@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import axios from "axios";
 import { computed, onMounted, ref } from "vue";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 interface ModelMetadata {
   modalities?: { input?: string[] };
@@ -96,7 +97,7 @@ const filteredProviders = computed(() => {
 });
 
 function loadFromStorage() {
-  const savedProvider = localStorage.getItem("selectedProvider");
+  const savedProvider = safeLocalStorage.getItem("selectedProvider");
   if (savedProvider) {
     selectedProviderId.value = savedProvider;
   }
@@ -104,7 +105,7 @@ function loadFromStorage() {
 
 function saveToStorage() {
   if (selectedProviderId.value) {
-    localStorage.setItem("selectedProvider", selectedProviderId.value);
+    safeLocalStorage.setItem("selectedProvider", selectedProviderId.value);
   }
 }
 

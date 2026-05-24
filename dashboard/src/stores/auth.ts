@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { router } from "@/router";
 import { createLoginProof, type LoginChallenge } from "@/utils/authLoginProof";
 import axios from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -12,25 +13,25 @@ export const useAuthStore = defineStore("auth", {
   actions: {
     async finishAuthenticatedSession(data: any): Promise<void> {
       this.username = data.username;
-      localStorage.setItem("user", this.username);
-      localStorage.setItem("token", data.token);
+      safeLocalStorage.setItem("user", this.username);
+      safeLocalStorage.setItem("token", data.token);
       const passwordUpgradeRequired = !!data?.password_upgrade_required;
       const passwordWarning = !!data?.change_pwd_hint || (!!data?.legacy_pwd_hint && !passwordUpgradeRequired);
       if (passwordWarning) {
-        localStorage.setItem("change_pwd_hint", "true");
+        safeLocalStorage.setItem("change_pwd_hint", "true");
         if (data?.legacy_pwd_hint && !passwordUpgradeRequired) {
-          localStorage.setItem("legacy_pwd_hint", "true");
+          safeLocalStorage.setItem("legacy_pwd_hint", "true");
         } else {
-          localStorage.removeItem("legacy_pwd_hint");
+          safeLocalStorage.removeItem("legacy_pwd_hint");
         }
       } else {
-        localStorage.removeItem("change_pwd_hint");
-        localStorage.removeItem("legacy_pwd_hint");
+        safeLocalStorage.removeItem("change_pwd_hint");
+        safeLocalStorage.removeItem("legacy_pwd_hint");
       }
       if (passwordUpgradeRequired) {
-        localStorage.setItem("password_upgrade_required", "true");
+        safeLocalStorage.setItem("password_upgrade_required", "true");
       } else {
-        localStorage.removeItem("password_upgrade_required");
+        safeLocalStorage.removeItem("password_upgrade_required");
       }
 
       const onboardingCompleted = await this.checkOnboardingCompleted();
@@ -127,16 +128,16 @@ export const useAuthStore = defineStore("auth", {
     },
     logout() {
       this.username = "";
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      localStorage.removeItem("change_pwd_hint");
-      localStorage.removeItem("legacy_pwd_hint");
-      localStorage.removeItem("password_upgrade_required");
+      safeLocalStorage.removeItem("user");
+      safeLocalStorage.removeItem("token");
+      safeLocalStorage.removeItem("change_pwd_hint");
+      safeLocalStorage.removeItem("legacy_pwd_hint");
+      safeLocalStorage.removeItem("password_upgrade_required");
       void axios.post("/api/auth/logout").catch(() => undefined);
       router.push("/auth/login");
     },
     has_token(): boolean {
-      return !!localStorage.getItem("token");
+      return !!safeLocalStorage.getItem("token");
     },
   },
 });

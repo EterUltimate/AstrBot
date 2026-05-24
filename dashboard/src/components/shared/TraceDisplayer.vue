@@ -2,6 +2,7 @@
 import { EventSourcePolyfill } from "event-source-polyfill";
 import { onBeforeUnmount, onMounted, shallowRef } from "vue";
 import axios, { resolveApiUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 let isMounted = false;
 const events = shallowRef([]);
@@ -53,7 +54,7 @@ function connectSSE() {
     eventSource.close();
     eventSource = null;
   }
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
   eventSource = new EventSourcePolyfill(resolveApiUrl("/api/live-log"), {
     headers: { Authorization: token ? `Bearer ${token}` : "" },
     heartbeatTimeout: 300000,

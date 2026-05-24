@@ -16,7 +16,7 @@ def test_local_file_system_component_prefers_utf8_before_windows_locale(
     tmp_path: Path,
 ):
     _allow_tmp_root(monkeypatch, tmp_path)
-    monkeypatch.setattr(local_booter.os, "name", "nt", raising=False)
+    monkeypatch.setattr(local_booter, "_is_windows_platform", lambda: True)
     monkeypatch.setattr(
         local_booter.locale,
         "getpreferredencoding",
@@ -38,7 +38,7 @@ def test_local_file_system_component_falls_back_to_gbk_on_windows(
     tmp_path: Path,
 ):
     _allow_tmp_root(monkeypatch, tmp_path)
-    monkeypatch.setattr(local_booter.os, "name", "nt", raising=False)
+    monkeypatch.setattr(local_booter, "_is_windows_platform", lambda: True)
     monkeypatch.setattr(
         local_booter.locale,
         "getpreferredencoding",

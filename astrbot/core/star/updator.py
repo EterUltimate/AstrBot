@@ -1,3 +1,4 @@
+import ntpath
 import os
 import shutil
 import tempfile
@@ -108,13 +109,23 @@ class PluginUpdator(RepoZipUpdator):
 
     @staticmethod
     def _create_extract_temp_dir(target_path: Path) -> Path:
+        target_name = PluginUpdator._path_leaf_name(target_path)
         return Path(
             tempfile.mkdtemp(
-                prefix=f".{target_path.name}.",
+                prefix=f".{target_name}.",
                 suffix=".extract",
                 dir=target_path.parent,
             )
         )
+
+    @staticmethod
+    def _path_leaf_name(path: Path) -> str:
+        path_text = str(path).rstrip("\\/")
+        if path_text.startswith("\\\\") or (
+            len(path_text) >= 3 and path_text[1] == ":" and path_text[2] in "\\/"
+        ):
+            return ntpath.basename(path_text)
+        return path.name
 
     def _move_extracted_children(self, source_path: Path, target_path: Path) -> None:
         for child in source_path.iterdir():

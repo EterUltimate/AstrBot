@@ -5,6 +5,7 @@ import { setupI18n } from "./i18n/composables";
 import confirmPlugin from "./plugins/confirmPlugin";
 import vuetify from "./plugins/vuetify";
 import { router } from "./router";
+import { safeLocalStorage } from "./utils/storageFallback";
 import "@/scss/style.scss";
 import { loader } from "@guolao/vue-monaco-editor";
 import * as monaco from "monaco-editor";
@@ -75,8 +76,8 @@ setupI18n()
     import("./stores/customizer").then(({ useCustomizerStore }) => {
       const customizer = useCustomizerStore(pinia);
       vuetify.theme.global.name.value = customizer.uiTheme;
-      const storedPrimary = localStorage.getItem("themePrimary");
-      const storedSecondary = localStorage.getItem("themeSecondary");
+      const storedPrimary = safeLocalStorage.getItem("themePrimary");
+      const storedSecondary = safeLocalStorage.getItem("themeSecondary");
       if (storedPrimary || storedSecondary) {
         const themes = vuetify.theme.themes.value;
         ["PurpleTheme", "PurpleThemeDark"].forEach((name) => {
@@ -109,8 +110,8 @@ setupI18n()
     import("./stores/customizer").then(({ useCustomizerStore }) => {
       const customizer = useCustomizerStore(pinia);
       vuetify.theme.global.name.value = customizer.uiTheme;
-      const storedPrimary = localStorage.getItem("themePrimary");
-      const storedSecondary = localStorage.getItem("themeSecondary");
+      const storedPrimary = safeLocalStorage.getItem("themePrimary");
+      const storedSecondary = safeLocalStorage.getItem("themeSecondary");
       if (storedPrimary || storedSecondary) {
         const themes = vuetify.theme.themes.value;
         ["PurpleTheme", "PurpleThemeDark"].forEach((name) => {
@@ -126,11 +127,11 @@ setupI18n()
   });
 
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = safeLocalStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-  const locale = localStorage.getItem("astrbot-locale");
+  const locale = safeLocalStorage.getItem("astrbot-locale");
   if (locale) {
     config.headers["Accept-Language"] = locale;
   }
@@ -152,7 +153,7 @@ async function initApp() {
   const configApiUrl = config.apiBaseUrl || "";
   const envApiUrl = import.meta.env.VITE_API_BASE || "";
 
-  const localApiUrl = localStorage.getItem("apiBaseUrl");
+  const localApiUrl = safeLocalStorage.getItem("apiBaseUrl");
   const apiBaseUrl = localApiUrl !== null ? localApiUrl : configApiUrl || envApiUrl;
 
   if (apiBaseUrl) {
@@ -170,7 +171,7 @@ async function initApp() {
       url = resolveApiUrl(input, getApiBaseUrl());
     }
 
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     const headers = new Headers(
       init?.headers || (typeof input !== "string" && "headers" in input ? (input as Request).headers : undefined),
     );
@@ -178,7 +179,7 @@ async function initApp() {
     if (token && !headers.has("Authorization")) {
       headers.set("Authorization", `Bearer ${token}`);
     }
-    const locale = localStorage.getItem("astrbot-locale");
+    const locale = safeLocalStorage.getItem("astrbot-locale");
     if (locale && !headers.has("Accept-Language")) {
       headers.set("Accept-Language", locale);
     }

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import axios, { resolveApiUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 /**
  * Common store used across the dashboard.
@@ -37,7 +38,7 @@ export const useCommonStore = defineStore("common", {
       const headers = {
         "Content-Type": "multipart/form-data",
       };
-      const token = localStorage.getItem("token");
+      const token = safeLocalStorage.getItem("token");
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }

@@ -1,5 +1,6 @@
 import { computed, onBeforeUnmount, type Ref, reactive, ref } from "vue";
 import axios, { resolveApiUrl, resolveWebSocketUrl } from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export type TransportMode = "sse" | "websocket";
 
@@ -430,7 +431,7 @@ export function useMessages(options: UseMessagesOptions) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          Authorization: `Bearer ${safeLocalStorage.getItem("token") || ""}`,
         },
         body: JSON.stringify({
           session_id: sessionId,
@@ -542,7 +543,7 @@ export function useMessages(options: UseMessagesOptions) {
       abort,
     };
     const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (!chatWidgetApi) headers.Authorization = `Bearer ${localStorage.getItem("token") || ""}`;
+    if (!chatWidgetApi) headers.Authorization = `Bearer ${safeLocalStorage.getItem("token") || ""}`;
     const body: Record<string, any> = {
       session_id: sessionId,
       message: parts.map(partToPayload),
@@ -593,7 +594,7 @@ export function useMessages(options: UseMessagesOptions) {
     selectedProvider: string,
     selectedModel: string,
   ) {
-    const token = encodeURIComponent(localStorage.getItem("token") || "");
+    const token = encodeURIComponent(safeLocalStorage.getItem("token") || "");
     const ws = new WebSocket(resolveWebSocketUrl("/api/unified_chat/ws", { token }));
 
     activeConnections[sessionId] = {

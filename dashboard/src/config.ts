@@ -1,4 +1,5 @@
 import { DARK_THEME_NAME, LIGHT_THEME_NAME } from "@/theme/constants";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 export type ConfigProps = {
   Sidebar_drawer: boolean;
@@ -10,10 +11,10 @@ export type ConfigProps = {
 };
 
 function checkUITheme() {
-  /* 检查localStorage有无记忆的主题选项，如有则使用，否则使用默认值 */
-  const theme = localStorage.getItem("uiTheme");
+  /* 检查safeLocalStorage有无记忆的主题选项，如有则使用，否则使用默认值 */
+  const theme = safeLocalStorage.getItem("uiTheme");
   if (!theme || ![LIGHT_THEME_NAME, DARK_THEME_NAME].includes(theme)) {
-    localStorage.setItem("uiTheme", LIGHT_THEME_NAME); // todo: 这部分可以根据vuetify.ts的默认主题动态调整
+    safeLocalStorage.setItem("uiTheme", LIGHT_THEME_NAME); // todo: 这部分可以根据vuetify.ts的默认主题动态调整
     return LIGHT_THEME_NAME;
   } else return theme;
 }

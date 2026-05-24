@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref, shallowRef, watch } from "vue";
 import ChangelogDialog from "@/components/shared/ChangelogDialog.vue";
 import { useI18n } from "@/i18n/composables";
 import { applySidebarCustomization } from "@/utils/sidebarCustomization";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import { useCustomizerStore } from "../../../stores/customizer";
 import NavItem from "./NavItem.vue";
 import sidebarItems from "./sidebarItem";
@@ -32,7 +33,7 @@ function sanitizeOpenedItems(items, menuItems) {
 
 function getInitialOpenedItems(menuItems) {
   try {
-    const stored = JSON.parse(localStorage.getItem("sidebar_openedItems") || "[]");
+    const stored = JSON.parse(safeLocalStorage.getItem("sidebar_openedItems") || "[]");
     return sanitizeOpenedItems(stored, menuItems);
   } catch {
     return [];
@@ -46,7 +47,7 @@ const openedItems = ref(getInitialOpenedItems(sidebarMenu.value));
 watch(
   openedItems,
   (val) => {
-    localStorage.setItem("sidebar_openedItems", JSON.stringify(sanitizeOpenedItems(val, sidebarMenu.value)));
+    safeLocalStorage.setItem("sidebar_openedItems", JSON.stringify(sanitizeOpenedItems(val, sidebarMenu.value)));
   },
   { deep: true },
 );

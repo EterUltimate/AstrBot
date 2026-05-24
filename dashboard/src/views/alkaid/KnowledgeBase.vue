@@ -765,6 +765,7 @@ import ConsoleDisplayer from "@/components/shared/ConsoleDisplayer.vue";
 import { useModuleI18n } from "@/i18n/composables";
 import { normalizeTextInput } from "@/utils/inputValue";
 import axios from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 
 interface ProviderConfig {
   id: string;
@@ -985,9 +986,9 @@ export default {
       this.searchQuery = normalizeTextInput(value);
     },
     getSelectedGitHubProxy() {
-      if (typeof window === "undefined" || !window.localStorage) return "";
-      return localStorage.getItem("githubProxyRadioValue") === "1"
-        ? localStorage.getItem("selectedGitHubProxy") || ""
+      if (typeof window === "undefined" || !safeLocalStorage) return "";
+      return safeLocalStorage.getItem("githubProxyRadioValue") === "1"
+        ? safeLocalStorage.getItem("selectedGitHubProxy") || ""
         : "";
     },
     llmModelProps(providerConfig: ProviderConfig) {

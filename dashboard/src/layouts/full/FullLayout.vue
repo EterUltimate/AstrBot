@@ -9,6 +9,7 @@ import { useCommonStore } from "@/stores/common";
 import { useCustomizerStore } from "@/stores/customizer";
 import { useRouterLoadingStore } from "@/stores/routerLoading";
 import axios from "@/utils/request";
+import { safeLocalStorage } from "@/utils/storageFallback";
 import VerticalHeaderVue from "./vertical-header/VerticalHeader.vue";
 import VerticalSidebarVue from "./vertical-sidebar/VerticalSidebar.vue";
 
@@ -56,7 +57,7 @@ const checkMigration = async (): Promise<boolean> => {
 };
 
 const maybeShowFirstNotice = async () => {
-  if (localStorage.getItem(FIRST_NOTICE_SEEN_KEY) === "1") {
+  if (safeLocalStorage.getItem(FIRST_NOTICE_SEEN_KEY) === "1") {
     return;
   }
 
@@ -74,7 +75,7 @@ const maybeShowFirstNotice = async () => {
       return;
     }
 
-    localStorage.setItem(FIRST_NOTICE_SEEN_KEY, "1");
+    safeLocalStorage.setItem(FIRST_NOTICE_SEEN_KEY, "1");
   } catch (error) {
     console.error("Failed to load first notice:", error);
   }
@@ -83,7 +84,7 @@ const maybeShowFirstNotice = async () => {
 const onFirstNoticeDialogUpdate = (visible: boolean) => {
   showFirstNoticeDialog.value = visible;
   if (!visible) {
-    localStorage.setItem(FIRST_NOTICE_SEEN_KEY, "1");
+    safeLocalStorage.setItem(FIRST_NOTICE_SEEN_KEY, "1");
   }
 };
 
