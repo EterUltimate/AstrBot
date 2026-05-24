@@ -71,6 +71,7 @@ class SQLiteDatabase(BaseDatabase):
             await self._ensure_persona_skills_column(conn)
             await self._ensure_persona_subagents_column(conn)
             await self._ensure_persona_custom_error_message_column(conn)
+            await self._ensure_persona_advanced_columns(conn)
             await self._ensure_platform_message_history_checkpoint_column(conn)
             await self._ensure_attachment_columns(conn)
             await conn.commit()
@@ -91,15 +92,7 @@ class SQLiteDatabase(BaseDatabase):
         columns = {row[1] for row in result.fetchall()}
 
         if column not in columns:
-            await conn.execute(
-                text(
-                    "ALTER TABLE personas ADD COLUMN folder_id VARCHAR(36) DEFAULT NULL",
-                ),
-            )
-        if "sort_order" not in columns:
-            await conn.execute(
-                text("ALTER TABLE personas ADD COLUMN sort_order INTEGER DEFAULT 0"),
-            )
+            await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {ddl}"))
 
     async def _ensure_persona_folder_columns(self, conn) -> None:
         """确保 personas 表有 folder_id 和 sort_order 列。"""

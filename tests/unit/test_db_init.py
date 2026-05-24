@@ -5,12 +5,15 @@ setup, and the ``get_db`` async context manager.
 """
 
 import inspect
+import sqlite3
 from abc import ABC
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from sqlalchemy import text
 
 from astrbot.core.db import BaseDatabase
+from astrbot.core.db.sqlite import SQLiteDatabase
 
 
 class TestBaseDatabaseAbstract:
@@ -171,6 +174,49 @@ class TestBaseDatabaseInitialize:
             db = BaseDatabase()
 
         await db.initialize()  # should not raise
+
+    @pytest.mark.asyncio
+    async def test_sqlite_initialize_migrates_legacy_persona_advanced_columns(
+        self,
+        tmp_path,
+    ):
+        """Legacy persona tables receive newer advanced persona columns."""
+        db_path = tmp_path / "legacy-persona.db"
+        with sqlite3.connect(db_path) as conn:
+            conn.execute("""
+                CREATE TABLE personas (
+                    created_at DATETIME NOT NULL,
+                    updated_at DATETIME NOT NULL,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    persona_id VARCHAR(255) NOT NULL,
+                    system_prompt TEXT NOT NULL,
+                    begin_dialogs JSON,
+                    tools JSON,
+                    UNIQUE (persona_id)
+                )
+            """)
+
+        db = SQLiteDatabase(str(db_path))
+        try:
+            await db.initialize()
+            async with db.engine.connect() as conn:
+                result = await conn.execute(text("PRAGMA table_info(personas)"))
+                columns = {row[1] for row in result.fetchall()}
+        finally:
+            await db.engine.dispose()
+
+        assert {
+            "skills",
+            "subagents",
+            "custom_error_message",
+            "folder_id",
+            "sort_order",
+            "personality_config",
+            "chat_config",
+            "robot_config",
+            "llm_model_config",
+            "is_advanced",
+        } <= columns
 
 
 class TestBaseDatabaseGetDb:

@@ -112,6 +112,11 @@ async def check_dashboard_files(webui_dir: str | None = None):
                 )
         return data_dist_path
 
+    bundled_dist = get_bundled_dashboard_dist_path()
+    if await asyncio.to_thread(os.path.exists, bundled_dist):
+        logger.info("Using bundled WebUI directory: %s", bundled_dist)
+        return str(bundled_dist)
+
     logger.info(
         "Downloading WebUI. If it fails, download dist.zip from https://github.com/AstrBotDevs/AstrBot/releases/latest and extract dist to data/.",
     )

@@ -370,7 +370,15 @@ def _read_dashboard_dist_version(dist_dir: str | Path) -> str | None:
 
 
 def get_bundled_dashboard_dist_path() -> Path:
-    return Path(get_astrbot_path()) / "astrbot" / "dashboard" / "dist"
+    package_dist = Path(get_astrbot_path()) / "dashboard" / "dist"
+    if package_dist.exists():
+        return package_dist
+
+    source_dist = Path(get_astrbot_path()).parent / "dashboard" / "dist"
+    if source_dist.exists():
+        return source_dist
+
+    return package_dist
 
 
 def _normalize_dashboard_version(version: str) -> str:

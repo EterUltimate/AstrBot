@@ -154,6 +154,27 @@ async def test_check_dashboard_files_not_exists(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_check_dashboard_files_uses_bundled_dist_before_download(monkeypatch):
+    """Tests source-built dashboard dist is used before downloading dev WebUI."""
+    bundled_dist = Path("/tmp/source-dashboard-dist")
+    data_dist = Path("/tmp/data/dist")
+
+    monkeypatch.setattr("main.get_astrbot_data_path", lambda: str(data_dist.parent))
+    monkeypatch.setattr("main.get_bundled_dashboard_dist_path", lambda: bundled_dist)
+    monkeypatch.setattr(
+        os.path,
+        "exists",
+        lambda path: Path(path) == bundled_dist,
+    )
+
+    with mock.patch("main.download_dashboard") as mock_download:
+        result = await check_dashboard_files()
+
+    assert result == str(bundled_dist)
+    mock_download.assert_not_called()
+
+
+@pytest.mark.asyncio
 async def test_check_dashboard_files_exists_and_version_match(monkeypatch):
     """Tests that dashboard is not downloaded when it exists and version matches."""
     # Mock os.path.exists to return True
@@ -180,7 +201,6 @@ async def test_check_dashboard_files_exists_but_version_mismatch(monkeypatch):
     with mock.patch(
         "main.get_dashboard_version", mock.AsyncMock(return_value="v0.0.1")
     ):
-
         with mock.patch("main.logger.warning") as mock_logger_warning:
             await check_dashboard_files()
             mock_logger_warning.assert_called_once()
